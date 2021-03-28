@@ -17,16 +17,20 @@ var modelLoadedNum = 0;
 const modelNum = 5;
 
 var skyBox;
-var stylesSkyboxImgURL = ["assets/mondrian.jpg", "assets/sherman.jpg", "assets/pollock.jpg", "assets/fuchun.jpg"];
-
+var stylesSkyboxImgURL = [
+  "assets/mondrian.jpg",
+  "assets/sherman.jpg",
+  "assets/pollock.jpg",
+  "assets/fuchun.jpg",
+];
 
 var objModel;
 
-var raycaster, mouse = {
-  x: 0,
-  y: 0
-};
-
+var raycaster,
+  mouse = {
+    x: 0,
+    y: 0,
+  };
 
 var options = {
   TopLight: 0.5,
@@ -34,16 +38,16 @@ var options = {
   LeftLight: 0.5,
   LightMesh: true,
   ShowSkybox: true,
-  "Mondrian": function () {
+  Mondrian: function () {
     transfer(0);
   },
-  "Sherman": function () {
+  Sherman: function () {
     transfer(1);
   },
-  "Pollock": function () {
+  Pollock: function () {
     transfer(2);
   },
-  "Fuchun": function () {
+  Fuchun: function () {
     transfer(3);
   },
   "CCP Propaganda": function () {
@@ -66,13 +70,9 @@ var options = {
   },
   ResetTexture: function () {
     resetTexture();
-  }
-
+  },
 };
 var light1, light2, light3;
-
-
-
 
 function setup() {
   noCanvas();
@@ -97,8 +97,6 @@ function setup() {
 
   oriTextureImgDom.id = "ori-texture";
   oriTextureImgDom.src = "assets/rabbitDiffuse.jpg";
-
-
 
   styleA = ml5.styleTransfer("models/Mondrian", function () {
     console.log("Mondrian Style Model Loaded");
@@ -133,14 +131,17 @@ function setup() {
   animate();
 }
 
-
-
 function init() {
-  canvasContainer = document.getElementById('canvasID');
+  canvasContainer = document.getElementById("canvasID");
   statsContainer = document.getElementById("statsID");
 
   //threeCamera
-  threeCamera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, FAR);
+  threeCamera = new THREE.PerspectiveCamera(
+    50,
+    window.innerWidth / window.innerHeight,
+    1,
+    FAR
+  );
   threeCamera.position.set(0, 0, 10);
   threeCamera.lookAt(new THREE.Vector3(0, 0, -10));
 
@@ -165,12 +166,11 @@ function init() {
 
   //RAYCASTER
   raycaster = new THREE.Raycaster();
-  renderer.domElement.addEventListener('click', raycast, false);
+  renderer.domElement.addEventListener("click", raycast, false);
 
   // STATS
   stats = new Stats();
   statsContainer.appendChild(stats.dom);
-
 
   // CONTROLS
   controls = new THREE.OrbitControls(threeCamera, renderer.domElement);
@@ -178,45 +178,41 @@ function init() {
   // controls.enableRotate = false;
   controls.enableDamping = true;
 
-
   var skyBoxGeometry = new THREE.CubeGeometry(100, 100, 100);
   var skyBoxMaterial = new THREE.MeshPhongMaterial({
-    side: THREE.DoubleSide
+    side: THREE.DoubleSide,
   });
-  skyBoxMaterial.map = new THREE.TextureLoader().load("assets/rabbitDiffuse.jpg");
+  skyBoxMaterial.map = new THREE.TextureLoader().load(
+    "assets/rabbitDiffuse.jpg"
+  );
   skyBox = new THREE.Mesh(skyBoxGeometry, skyBoxMaterial);
   scene.add(skyBox);
 
+  objLoader.load("assets/Rabbit.obj", function (object) {
+    object.traverse(function (child) {
+      // aka setTexture
+      if (child instanceof THREE.Mesh) {
+        child.material = new THREE.MeshPhongMaterial();
+        child.material.map = new THREE.Texture(transferTextureImgDom);
+        child.name = "objModel";
+        objModel = child;
+        scene.add(objModel);
+        objModel.material.map.needsUpdate = true;
 
-  objLoader.load(
-    "assets/Rabbit.obj",
-    function (object) {
-      object.traverse(function (child) { // aka setTexture
-        if (child instanceof THREE.Mesh) {
-          child.material = new THREE.MeshPhongMaterial();
-          child.material.map = new THREE.Texture(transferTextureImgDom);
-          child.name = "objModel";
-          objModel = child;
-          scene.add(objModel);
-          objModel.material.map.needsUpdate = true;
-
-
-          var textureLoader = new THREE.TextureLoader();
-          textureLoader.load('assets/rabbitNormal.jpg', (texture) => {
-            objModel.material.normalMap = texture;
-            objModel.material.normalMap.needsUpdate = true;
-            console.log("Normal Map Loaded");
-          });
-          textureLoader.load('assets/rabbitSpecular.jpg', (texture) => {
-            objModel.material.specularMap = texture;
-            objModel.material.specularMap.needsUpdate = true;
-            console.log("Specular Map Loaded");
-          });
-
-        }
-      });
-    }
-  );
+        var textureLoader = new THREE.TextureLoader();
+        textureLoader.load("assets/rabbitNormal.jpg", (texture) => {
+          objModel.material.normalMap = texture;
+          objModel.material.normalMap.needsUpdate = true;
+          console.log("Normal Map Loaded");
+        });
+        textureLoader.load("assets/rabbitSpecular.jpg", (texture) => {
+          objModel.material.specularMap = texture;
+          objModel.material.specularMap.needsUpdate = true;
+          console.log("Specular Map Loaded");
+        });
+      }
+    });
+  });
 
   var alight = new THREE.AmbientLight(0x404040); // soft white light
   scene.add(alight);
@@ -224,26 +220,40 @@ function init() {
   var sphere = new THREE.SphereGeometry(0.15, 16, 8);
 
   light1 = new THREE.PointLight(0xaaaaaa, options.TopLight, 4, 5);
-  light1.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({
-    color: 0xffffff
-  })));
+  light1.add(
+    new THREE.Mesh(
+      sphere,
+      new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+      })
+    )
+  );
   light1.position.set(0, 2, 0);
   scene.add(light1);
 
   light2 = new THREE.PointLight(0xaaaaaa, options.RightLight, 4, 5);
-  light2.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({
-    color: 0xffffff
-  })));
+  light2.add(
+    new THREE.Mesh(
+      sphere,
+      new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+      })
+    )
+  );
   light2.position.set(1, -0.5, 0);
   scene.add(light2);
 
   light3 = new THREE.PointLight(0xaaaaaa, options.LeftLight, 4, 5);
-  light3.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({
-    color: 0xffffff
-  })));
+  light3.add(
+    new THREE.Mesh(
+      sphere,
+      new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+      })
+    )
+  );
   light3.position.set(-1, -0.5, 0);
   scene.add(light3);
-
 
   //DAT.GUI Stuff
   var gui = new dat.GUI({});
@@ -278,7 +288,7 @@ function init() {
 
   gui.add(options, "ResetTexture");
 
-  window.addEventListener('resize', onWindowResize, false);
+  window.addEventListener("resize", onWindowResize, false);
 }
 
 function onWindowResize() {
@@ -301,15 +311,27 @@ function animateObjects() {
   light2.intensity = options.RightLight;
   light3.intensity = options.LeftLight;
 
-  light1.children[0].material.color = new THREE.Color(Math.max(0.5, options.TopLight * 2), Math.max(0.5, options.TopLight * 2), Math.max(0.5, options.TopLight * 2));
+  light1.children[0].material.color = new THREE.Color(
+    Math.max(0.5, options.TopLight * 2),
+    Math.max(0.5, options.TopLight * 2),
+    Math.max(0.5, options.TopLight * 2)
+  );
   light1.children[0].material.color.needsUpdate = true;
   light1.children[0].visible = options.LightMesh;
 
-  light2.children[0].material.color = new THREE.Color(Math.max(0.5, options.RightLight * 2), Math.max(0.5, options.RightLight * 2), Math.max(0.5, options.RightLight * 2));
+  light2.children[0].material.color = new THREE.Color(
+    Math.max(0.5, options.RightLight * 2),
+    Math.max(0.5, options.RightLight * 2),
+    Math.max(0.5, options.RightLight * 2)
+  );
   light2.children[0].material.color.needsUpdate = true;
   light2.children[0].visible = options.LightMesh;
 
-  light3.children[0].material.color = new THREE.Color(Math.max(0.5, options.LeftLight * 2), Math.max(0.5, options.LeftLight * 2), Math.max(0.5, options.LeftLight * 2));
+  light3.children[0].material.color = new THREE.Color(
+    Math.max(0.5, options.LeftLight * 2),
+    Math.max(0.5, options.LeftLight * 2),
+    Math.max(0.5, options.LeftLight * 2)
+  );
   light3.children[0].visible = options.LightMesh;
   light3.children[0].material.color.needsUpdate = true;
 
@@ -335,16 +357,19 @@ function raycast(e) {
   }
 }
 
-
 function transfer(num) {
   if (modelLoadedNum == modelNum && num >= 0 && num < modelNum) {
-
-    skyBox.material.map = new THREE.TextureLoader().load(stylesSkyboxImgURL[num]);
+    skyBox.material.map = new THREE.TextureLoader().load(
+      stylesSkyboxImgURL[num]
+    );
     skyBox.material.map.needsUpdate = true;
 
-    console.log("Transferring\nThe interface will freeze for a few seconds for the process.");
-    alert("Transferring\nThe interface will freeze for a few seconds for the process.");
-
+    console.log(
+      "Transferring\nThe interface will freeze for a few seconds for the process."
+    );
+    alert(
+      "Transferring\nThe interface will freeze for a few seconds for the process."
+    );
 
     styles[num].transfer(oriTextureImgDom, function (err, resultImg) {
       transferTextureImgDom.src = resultImg.src;
@@ -356,13 +381,17 @@ function transfer(num) {
 
 function transferStack(num) {
   if (modelLoadedNum == modelNum && num >= 0 && num < modelNum) {
-
-    skyBox.material.map = new THREE.TextureLoader().load(stylesSkyboxImgURL[num]);
+    skyBox.material.map = new THREE.TextureLoader().load(
+      stylesSkyboxImgURL[num]
+    );
     skyBox.material.map.needsUpdate = true;
 
-    console.log("Transferring\nThe interface will freeze for a few seconds for the process.");
-    alert("Transferring\nThe interface will freeze for a few seconds for the process.");
-
+    console.log(
+      "Transferring\nThe interface will freeze for a few seconds for the process."
+    );
+    alert(
+      "Transferring\nThe interface will freeze for a few seconds for the process."
+    );
 
     styles[num].transfer(transferTextureImgDom, function (err, resultImg) {
       transferTextureImgDom.src = resultImg.src;
@@ -370,13 +399,14 @@ function transferStack(num) {
       objModel.material.map.needsUpdate = true;
       // skyBox.material.map = objModel.material.map;
       // skyBox.material.map.needsUpdate = true;
-
     });
   }
 }
 
 function resetTexture() {
-  skyBox.material.map = new THREE.TextureLoader().load("assets/rabbitDiffuse.jpg");
+  skyBox.material.map = new THREE.TextureLoader().load(
+    "assets/rabbitDiffuse.jpg"
+  );
   skyBox.material.map.needsUpdate = true;
 
   transferTextureImgDom.src = oriTextureImgDom.src;
